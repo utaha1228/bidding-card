@@ -1,0 +1,31 @@
+# Bidding meanings by full strain auction (Passes omitted).
+# Three formats (use `format` so the compiler picks the right branch):
+#
+# 1) explicit — exact keys in `patterns` (list one meaning for many keys).
+# 2) template — one `pattern` with slots: M = same major, m = same minor,
+#    N = second major different from M; expands to exact keys at load time.
+# 3) structured — `sequence` steps with strains: club|diamond|heart|spade|nt|major|minor|any
+#    and optional `where: new_suit` on a step (strain not shown earlier in this auction).
+#
+# When several rules match, `priority` (higher first) then length decide the winner.
+
+rules:
+  - format: explicit
+    patterns:
+      - "1♥-2♥"
+      - "1♠-2♠"
+    meaning: "Constructive single raise of partner’s major (example; tune to your card)."
+    priority: 2
+
+  - format: template
+    pattern: "1M-2M"
+    meaning: "Raise of the opened major at the two level (template covers both majors)."
+    priority: 1
+
+  - format: structured
+    priority: 3
+    sequence:
+      - { level: 1, strain: club }
+      - { level: 1, strain: major }
+      - { level: 2, strain: minor, where: new_suit }
+    meaning: "After one club and a one-major response, a two-level minor that is a new suit (example shape rule)."
