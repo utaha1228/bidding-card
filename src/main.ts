@@ -1,8 +1,12 @@
 import "./style.css";
-import { appendBid, auctionRows, type AuctionCall } from "./auction";
-import { lastContractFromAuction, legalBidsAfter, isBidLegal } from "./bidContext";
-import { meaningForStrainCalls } from "./bidMeanings";
-import { strainCallsFromAuction } from "./rules/auctionSequence";
+import { appendCall, auctionRows, upcomingWind, type AuctionCall } from "./auction";
+import {
+  lastContractFromAuction,
+  legalBidsAfter,
+  legalNonStrainCalls,
+  isCallLegal,
+} from "./bidContext";
+import { meaningsForAuctionHistory } from "./bidMeanings";
 import {
   allBids,
   bidAriaLabel,
@@ -62,10 +66,14 @@ function createAuctionStrip(getHistory: () => AuctionCall[]): {
         } else {
           const call = history[idx]!;
           const strain = strainFromCallText(call.text);
-          if (strain && strain !== "pass") {
+          if (strain && strain !== "pass" && strain !== "double" && strain !== "redouble") {
             cell.classList.add(`strain-tone--${strain}`);
           } else if (strain === "pass") {
             cell.classList.add("strain-tone--pass", "auction-table__cell--pass");
+          } else if (strain === "double") {
+            cell.classList.add("strain-tone--double", "auction-table__cell--conventional");
+          } else if (strain === "redouble") {
+            cell.classList.add("strain-tone--redouble", "auction-table__cell--conventional");
           }
         }
         cell.setAttribute("role", "cell");
@@ -83,22 +91,52 @@ function createAuctionStrip(getHistory: () => AuctionCall[]): {
   return { element: wrap, redraw };
 }
 
+const SPECIAL_CALLS: { text: "Pass" | "Double" | "Redouble"; aria: string; className: string }[] = [
+  { text: "Pass", aria: "Pass", className: "bids-grid__cell--pass-call" },
+  { text: "Double", aria: "Double", className: "bids-grid__cell--double-call" },
+  { text: "Redouble", aria: "Redouble", className: "bids-grid__cell--redouble-call" },
+];
+
 function createBidsPanel(
   getHistory: () => AuctionCall[],
-  onPick: (level: number, denom: Denomination) => void,
+  onPickCall: (text: string) => void,
 ): { element: HTMLElement; syncLegal: () => void } {
   const section = document.createElement("section");
   section.className = "bids-panel";
-  section.setAttribute("aria-label", "All possible bids from one club to seven no trump");
+  section.setAttribute(
+    "aria-label",
+    "Strain bids from one club through seven no trump, plus pass, double, and redouble",
+  );
 
   const title = document.createElement("h2");
   title.className = "bids-panel__title";
-  title.textContent = "All bids";
+  title.textContent = "Calls";
   section.appendChild(title);
+
+  const callRow = document.createElement("div");
+  callRow.className = "bids-call-row";
+  callRow.setAttribute("role", "group");
+  callRow.setAttribute("aria-label", "Pass, double, and redouble");
+
+  for (const spec of SPECIAL_CALLS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.dataset.call = spec.text;
+    btn.className = `bids-grid__cell bids-grid__cell--bid bids-call-row__btn ${spec.className}`;
+    btn.textContent = spec.text;
+    btn.setAttribute("aria-label", spec.aria);
+    btn.addEventListener("click", () => {
+      if (!isCallLegal(getHistory(), spec.text)) return;
+      onPickCall(spec.text);
+    });
+    callRow.appendChild(btn);
+  }
+  section.appendChild(callRow);
 
   const grid = document.createElement("div");
   grid.className = "bids-grid";
   grid.setAttribute("role", "group");
+  grid.setAttribute("aria-label", "Strain bids one club through seven no trump");
 
   for (const { level, denom } of allBids()) {
     const btn = document.createElement("button");
@@ -109,8 +147,9 @@ function createBidsPanel(
     btn.textContent = formatBid(level, denom);
     btn.setAttribute("aria-label", bidAriaLabel(level, denom));
     btn.addEventListener("click", () => {
-      if (!isBidLegal(getHistory(), level, denom)) return;
-      onPick(level, denom);
+      const text = formatBid(level, denom);
+      if (!isCallLegal(getHistory(), text)) return;
+      onPickCall(text);
     });
     grid.appendChild(btn);
   }
@@ -119,10 +158,16 @@ function createBidsPanel(
 
   function syncLegal() {
     const h = getHistory();
-    for (const btn of grid.querySelectorAll<HTMLButtonElement>("button[data-level][data-denom]")) {
+    for (const btn of section.querySelectorAll<HTMLButtonElement>("button[data-level][data-denom]")) {
       const level = Number(btn.dataset.level);
       const denom = btn.dataset.denom as Denomination;
-      const ok = isBidLegal(h, level, denom);
+      const ok = isCallLegal(h, formatBid(level, denom));
+      btn.disabled = !ok;
+      btn.classList.toggle("bids-grid__cell--illegal", !ok);
+    }
+    for (const btn of section.querySelectorAll<HTMLButtonElement>("button[data-call]")) {
+      const text = btn.dataset.call!;
+      const ok = isCallLegal(h, text);
       btn.disabled = !ok;
       btn.classList.toggle("bids-grid__cell--illegal", !ok);
     }
@@ -138,7 +183,10 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
 } {
   const aside = document.createElement("aside");
   aside.className = "bid-context";
-  aside.setAttribute("aria-label", "Current contract and legal next bids");
+  aside.setAttribute(
+    "aria-label",
+    "Current contract and next calls; strain bids listed only when bidding rules match",
+  );
 
   const top = document.createElement("div");
   top.className = "bid-context__half bid-context__half--current";
@@ -152,9 +200,9 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
   curWrap.className = "bid-context__call-wrap";
   const curLabel = document.createElement("p");
   curLabel.className = "bid-context__call";
-  const curMean = document.createElement("p");
-  curMean.className = "bid-context__meaning";
-  curWrap.append(curLabel, curMean);
+  const curMeanings = document.createElement("div");
+  curMeanings.className = "bid-context__meanings";
+  curWrap.append(curLabel, curMeanings);
   top.appendChild(curWrap);
 
   const bottom = document.createElement("div");
@@ -162,8 +210,14 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
 
   const hNext = document.createElement("h3");
   hNext.className = "bid-context__heading";
-  hNext.textContent = "Possible next bids";
+  hNext.textContent = "Possible next calls";
+  hNext.title =
+    "Pass, double, and redouble when legal; strain bids only if your bidding rules define a meaning for that auction.";
   bottom.appendChild(hNext);
+
+  const nextMeta = document.createElement("p");
+  nextMeta.className = "bid-context__next-meta";
+  bottom.appendChild(nextMeta);
 
   const list = document.createElement("ul");
   list.className = "bid-context__list";
@@ -176,43 +230,75 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
     const last = lastContractFromAuction(h);
 
     curLabel.className = "bid-context__call";
-    curMean.textContent = "";
+    curMeanings.replaceChildren();
 
     if (!last) {
       curLabel.textContent = "—";
       curLabel.classList.add("bid-context__call--empty");
-      curMean.textContent =
-        "No strain bid yet. The next North or South click is an opening call; East and West will pass automatically.";
     } else {
       curLabel.textContent = formatBid(last.level, last.denom);
       curLabel.classList.add(`strain-tone--${last.denom}`);
-      curMean.textContent = meaningForStrainCalls(strainCallsFromAuction(h));
+      for (const line of meaningsForAuctionHistory(h)) {
+        const p = document.createElement("p");
+        p.className = "bid-context__meaning-block";
+        p.textContent = line;
+        curMeanings.appendChild(p);
+      }
     }
 
     list.replaceChildren();
-    const next = legalBidsAfter(h);
-    if (next.length === 0) {
+    nextMeta.textContent = `Next to speak: ${upcomingWind(h)}`;
+
+    const extras = legalNonStrainCalls(h);
+    const pillClass: Record<"Pass" | "Double" | "Redouble", string> = {
+      Pass: "bid-context__pill strain-tone--pass",
+      Double: "bid-context__pill strain-tone--double",
+      Redouble: "bid-context__pill strain-tone--redouble",
+    };
+
+    for (const t of extras) {
+      const li = document.createElement("li");
+      li.className = "bid-context__list-item";
+      const call = document.createElement("span");
+      call.className = pillClass[t];
+      call.textContent = t;
+      li.appendChild(call);
+      list.appendChild(li);
+    }
+
+    const legalStrain = legalBidsAfter(h);
+    const nextWithRules = legalStrain
+      .map((b) => ({
+        bid: b,
+        lines: meaningsForAuctionHistory([
+          ...h,
+          { wind: upcomingWind(h), text: formatBid(b.level, b.denom) },
+        ]),
+      }))
+      .filter((x) => x.lines.length > 0);
+
+    if (legalStrain.length === 0) {
       const li = document.createElement("li");
       li.className = "bid-context__list-empty";
       li.textContent = "No higher strain bid exists (auction is already at 7NT).";
       list.appendChild(li);
     } else {
-      for (const b of next) {
+      for (const { bid: b, lines } of nextWithRules) {
         const li = document.createElement("li");
         li.className = "bid-context__list-item";
 
         const call = document.createElement("span");
         call.className = `bid-context__pill strain-tone--${b.denom}`;
         call.textContent = formatBid(b.level, b.denom);
+        li.appendChild(call);
 
-        const mean = document.createElement("p");
-        mean.className = "bid-context__list-meaning";
-        mean.textContent = meaningForStrainCalls([
-          ...strainCallsFromAuction(h),
-          { level: b.level, denom: b.denom },
-        ]);
+        for (const line of lines) {
+          const mean = document.createElement("p");
+          mean.className = "bid-context__list-meaning";
+          mean.textContent = line;
+          li.appendChild(mean);
+        }
 
-        li.append(call, mean);
         list.appendChild(li);
       }
     }
@@ -248,8 +334,8 @@ function refreshAll() {
 
 const auctionStrip = createAuctionStrip(getHistory);
 const bidContext = createBidContextPanel(getHistory);
-const bidsPanel = createBidsPanel(getHistory, (level, denom) => {
-  history = appendBid(history, level, denom);
+const bidsPanel = createBidsPanel(getHistory, (text) => {
+  history = appendCall(history, text);
   refreshAll();
 });
 

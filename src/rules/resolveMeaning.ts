@@ -1,26 +1,43 @@
-import { sequenceKey } from "./sequenceKey";
+import {
+  buildAuctionRuleKey,
+  normalizeRuleKey,
+  stripLeadingOurPassOnce,
+} from "./auctionKey";
 import { structuredRuleMatches } from "./structuredMatch";
-import type { CompiledRules, StrainCall } from "./types";
+import type { AuctionCall } from "../auction";
+import type { CompiledRules } from "./types";
 
-/** Pick best meaning: all structured + exact string rules that match; highest weight wins. */
-export function resolveMeaning(calls: StrainCall[], compiled: CompiledRules): string | null {
-  if (calls.length === 0) return null;
+/** All matching rule meanings, in YAML declaration order; duplicate texts appear once. */
+export function resolveMeanings(history: AuctionCall[], compiled: CompiledRules): string[] {
+  if (history.length === 0) return [];
 
-  const key = sequenceKey(calls);
-  let best: { meaning: string; weight: number } | null = null;
+  const baseKey = normalizeRuleKey(buildAuctionRuleKey(history));
+  const out: string[] = [];
+  const seen = new Set<string>();
 
-  for (const sr of compiled.structuredRules) {
-    if (structuredRuleMatches(sr, calls)) {
-      const cand = { meaning: sr.meaning, weight: sr.weight };
-      if (!best || cand.weight > best.weight) best = cand;
+  function collectForStringKey(keyStr: string): void {
+    for (const entry of compiled.orderedRules) {
+      if (entry.kind === "string") {
+        if (!entry.matchKeys.has(keyStr)) continue;
+      } else {
+        if (!structuredRuleMatches(entry.rule, history)) continue;
+      }
+
+      const text = entry.kind === "string" ? entry.meaning : entry.rule.meaning;
+      if (seen.has(text)) continue;
+      seen.add(text);
+      out.push(text);
     }
   }
 
-  const strHit = compiled.stringRules.get(key);
-  if (strHit) {
-    const cand = { meaning: strHit.meaning, weight: strHit.weight };
-    if (!best || cand.weight > best.weight) best = cand;
+  collectForStringKey(baseKey);
+
+  if (out.length === 0) {
+    const withoutLeadingPass = stripLeadingOurPassOnce(baseKey);
+    if (withoutLeadingPass !== null && withoutLeadingPass !== baseKey) {
+      collectForStringKey(withoutLeadingPass);
+    }
   }
 
-  return best?.meaning ?? null;
+  return out;
 }

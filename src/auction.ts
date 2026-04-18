@@ -11,25 +11,26 @@ function nextWind(last: Wind): Wind {
   return ORDER[(i + 1) % 4]!;
 }
 
-function upcomingWind(history: AuctionCall[]): Wind {
+export function upcomingWind(history: AuctionCall[]): Wind {
   if (history.length === 0) return "N";
   return nextWind(history[history.length - 1]!.wind);
 }
 
-/** North and South play clicked bids; East and West pass immediately after each. */
-export function appendBid(history: AuctionCall[], level: number, denom: Denomination): AuctionCall[] {
-  const next = upcomingWind(history);
-  if (next !== "N" && next !== "S") {
-    return history;
-  }
+/** NS vs EW */
+export function partnershipSide(w: Wind): 0 | 1 {
+  return w === "N" || w === "S" ? 0 : 1;
+}
 
+/** Append one call for whoever is next to speak (N, E, S, W in rotation). */
+export function appendCall(history: AuctionCall[], text: string): AuctionCall[] {
   const h = history.slice();
-  h.push({ wind: next, text: formatBid(level, denom) });
-  const passFrom = upcomingWind(h);
-  if (passFrom === "E" || passFrom === "W") {
-    h.push({ wind: passFrom, text: "Pass" });
-  }
+  h.push({ wind: upcomingWind(history), text });
   return h;
+}
+
+/** Append a strain bid for the next player (same as `appendCall` with `formatBid`). */
+export function appendBid(history: AuctionCall[], level: number, denom: Denomination): AuctionCall[] {
+  return appendCall(history, formatBid(level, denom));
 }
 
 export function auctionRows(history: AuctionCall[], minRows = 1): string[][] {

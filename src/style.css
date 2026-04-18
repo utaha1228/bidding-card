@@ -112,6 +112,35 @@ body {
   margin: 0 0 0.75rem;
 }
 
+.bids-call-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 42rem;
+  margin-bottom: 0.75rem;
+}
+
+.bids-call-row__btn {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.bids-grid__cell--pass-call {
+  color: #44403c;
+  background: color-mix(in srgb, #44403c 10%, white);
+}
+
+.bids-grid__cell--double-call {
+  color: #7c2d12;
+  background: color-mix(in srgb, #ea580c 18%, white);
+}
+
+.bids-grid__cell--redouble-call {
+  color: #5b21b6;
+  background: color-mix(in srgb, #7c3aed 16%, white);
+}
+
 .bids-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -176,6 +205,21 @@ body {
   background: color-mix(in srgb, #44403c 10%, white);
 }
 
+.strain-tone--double {
+  color: #7c2d12;
+  background: color-mix(in srgb, #ea580c 18%, white);
+}
+
+.strain-tone--redouble {
+  color: #5b21b6;
+  background: color-mix(in srgb, #7c3aed 16%, white);
+}
+
+.auction-table__cell--conventional {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
 .bids-grid__cell--bid:hover:not(:disabled) {
   filter: brightness(0.97);
 }
@@ -223,6 +267,13 @@ body {
   opacity: 0.78;
 }
 
+.bid-context__next-meta {
+  margin: 0 0 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
 .bid-context__call-wrap {
   display: flex;
   flex-direction: column;
@@ -248,7 +299,18 @@ body {
   color: inherit;
 }
 
-.bid-context__meaning {
+.bid-context__meanings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.bid-context__meanings:empty {
+  display: none;
+}
+
+.bid-context__meaning-block {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 450;
@@ -298,6 +360,10 @@ body {
   opacity: 0.9;
 }
 
+.bid-context__list-item > .bid-context__list-meaning + .bid-context__list-meaning {
+  margin-top: 0.35rem;
+}
+
 .bid-context__list-empty {
   margin: 0;
   font-size: 0.92rem;
@@ -339,6 +405,31 @@ body {
   .strain-tone--pass {
     color: #d6d3d1;
     background: color-mix(in srgb, #d6d3d1 10%, #0c0c0c);
+  }
+
+  .strain-tone--double {
+    color: #fdba74;
+    background: color-mix(in srgb, #ea580c 22%, #0f0a08);
+  }
+
+  .strain-tone--redouble {
+    color: #ddd6fe;
+    background: color-mix(in srgb, #7c3aed 20%, #0a0814);
+  }
+
+  .bids-grid__cell--pass-call {
+    color: #d6d3d1;
+    background: color-mix(in srgb, #d6d3d1 10%, #0c0c0c);
+  }
+
+  .bids-grid__cell--double-call {
+    color: #fdba74;
+    background: color-mix(in srgb, #ea580c 22%, #0f0a08);
+  }
+
+  .bids-grid__cell--redouble-call {
+    color: #ddd6fe;
+    background: color-mix(in srgb, #7c3aed 20%, #0a0814);
   }
 
   .bids-grid__cell--bid:hover:not(:disabled) {

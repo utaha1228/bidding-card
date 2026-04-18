@@ -1,10 +1,11 @@
+import type { AuctionCall } from "../auction";
+import { partnershipSide } from "../auction";
 import type { Denomination } from "../bidding";
+import { parseBidLabel } from "../bidding";
+import { RULE_KEY_OUR_PARTNERSHIP_SIDE } from "./auctionKey";
 import type { StrainCall, StructuredCompiled, StructuredStrain, StructuredWhere } from "./types";
 
-function strainMatches(
-  denom: Denomination,
-  strain: StructuredStrain,
-): boolean {
+function strainMatches(denom: Denomination, strain: StructuredStrain): boolean {
   switch (strain) {
     case "any":
       return true;
@@ -32,11 +33,30 @@ function stepMatches(
   return true;
 }
 
-export function structuredRuleMatches(rule: StructuredCompiled, calls: StrainCall[]): boolean {
-  if (calls.length !== rule.steps.length) return false;
-  for (let i = 0; i < calls.length; i++) {
-    const prior = calls.slice(0, i);
-    if (!stepMatches(calls[i]!, rule.steps[i]!, prior)) return false;
+function strainBidsWithWind(
+  history: AuctionCall[],
+): { level: number; denom: Denomination; wind: AuctionCall["wind"] }[] {
+  const out: { level: number; denom: Denomination; wind: AuctionCall["wind"] }[] = [];
+  for (const c of history) {
+    const p = parseBidLabel(c.text);
+    if (p) out.push({ ...p, wind: c.wind });
+  }
+  return out;
+}
+
+export function structuredRuleMatches(rule: StructuredCompiled, history: AuctionCall[]): boolean {
+  const strains = strainBidsWithWind(history);
+  if (strains.length !== rule.steps.length) return false;
+  for (let i = 0; i < strains.length; i++) {
+    const bid = strains[i]!;
+    const step = rule.steps[i]!;
+    if (step.who !== undefined) {
+      const side =
+        partnershipSide(bid.wind) === RULE_KEY_OUR_PARTNERSHIP_SIDE ? "us" : "them";
+      if (side !== step.who) return false;
+    }
+    const priorStrains = strains.slice(0, i).map((s) => ({ level: s.level, denom: s.denom }));
+    if (!stepMatches({ level: bid.level, denom: bid.denom }, step, priorStrains)) return false;
   }
   return true;
 }

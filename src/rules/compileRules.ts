@@ -1,21 +1,25 @@
+import { normalizeRuleKey } from "./auctionKey";
 import { expandTemplatePattern } from "./expandTemplate";
 import { parseStructuredStrain, parseWhere } from "./structuredMatch";
 import type {
   CompiledRules,
+  OrderedRuleEntry,
+  StepWho,
   StructuredCompiled,
   StructuredStepYaml,
 } from "./types";
 
 type YamlRule = Record<string, unknown>;
 
-function num(n: unknown, fallback: number): number {
-  return typeof n === "number" && Number.isFinite(n) ? n : fallback;
+function collectPatterns(row: YamlRule): string[] {
+  if (!Array.isArray(row.patterns)) return [];
+  return row.patterns
+    .filter((x): x is string => typeof x === "string")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
-function compileStructuredRule(
-  row: Record<string, unknown>,
-  priority: number,
-): StructuredCompiled | null {
+function compileStructuredRule(row: Record<string, unknown>): StructuredCompiled | null {
   const seq = row.sequence;
   if (!Array.isArray(seq) || seq.length === 0) return null;
 
@@ -29,46 +33,30 @@ function compileStructuredRule(
     const strain = parseStructuredStrain(String(step.strain ?? ""));
     if (!strain) return null;
     const where = parseWhere(typeof step.where === "string" ? step.where : undefined);
-    steps.push({ level: step.level, strain, where });
+    const whoRaw =
+      typeof step.who === "string" ? step.who.trim().toLowerCase() : undefined;
+    const who: StepWho | undefined =
+      whoRaw === "us" || whoRaw === "them" ? (whoRaw as StepWho) : undefined;
+    steps.push({ level: step.level, strain, where, who });
   }
 
   const meaning = typeof row.meaning === "string" ? row.meaning : "";
   if (!meaning.trim()) return null;
 
-  const weight =
-    priority * 10_000 + steps.length * 100 + 50 /* tie-break vs plain string */;
-
-  return { steps, meaning: meaning.trim(), weight };
+  return { steps, meaning: meaning.trim() };
 }
 
-function mergeStringRule(
-  map: Map<string, { meaning: string; weight: number }>,
-  key: string,
-  meaning: string,
-  weight: number,
-): void {
-  const prev = map.get(key);
-  if (!prev || weight > prev.weight) {
-    map.set(key, { meaning: meaning.trim(), weight });
-  }
-}
-
-function ruleWeight(priority: number, keyLen: number, parts: number): number {
-  return priority * 10_000 + parts * 100 + keyLen;
-}
-
-/** Parse YAML document `{ rules: [...] }` into compiled matchers. */
+/** Parse YAML document `{ rules: [...] }` into ordered matchers (same order as the file). */
 export function compileRulesFromUnknown(doc: unknown): CompiledRules {
-  const stringRules = new Map<string, { meaning: string; weight: number }>();
-  const structuredRules: StructuredCompiled[] = [];
+  const orderedRules: OrderedRuleEntry[] = [];
 
   if (!doc || typeof doc !== "object") {
-    return { stringRules, structuredRules };
+    return { orderedRules };
   }
 
   const rules = (doc as { rules?: unknown }).rules;
   if (!Array.isArray(rules)) {
-    return { stringRules, structuredRules };
+    return { orderedRules };
   }
 
   for (const raw of rules) {
@@ -76,8 +64,14 @@ export function compileRulesFromUnknown(doc: unknown): CompiledRules {
     const row = raw as YamlRule;
     const fmt =
       typeof row.format === "string" ? row.format.trim().toLowerCase() : "";
-    const priority = num(row.priority, 0);
     const meaning = typeof row.meaning === "string" ? row.meaning.trim() : "";
+
+    if (typeof row.pattern === "string" && (row.pattern as string).trim()) {
+      console.warn(
+        "[biddingRules] deprecated `pattern`; use `patterns` (YAML list) instead",
+        row,
+      );
+    }
 
     if (!meaning) {
       console.warn("[biddingRules] skipped rule without meaning", row);
@@ -85,74 +79,64 @@ export function compileRulesFromUnknown(doc: unknown): CompiledRules {
     }
 
     const hasSeq = Array.isArray(row.sequence) && row.sequence.length > 0;
-    const hasPatterns = Array.isArray(row.patterns) && row.patterns.length > 0;
-    const hasPattern =
-      typeof row.pattern === "string" && (row.pattern as string).trim().length > 0;
+    const patterns = collectPatterns(row);
+    const hasPatterns = patterns.length > 0;
 
-    if (hasSeq && (hasPatterns || hasPattern)) {
+    if (hasSeq && hasPatterns) {
       console.warn(
-        "[biddingRules] rule has both sequence and pattern(s); use format: structured | explicit | template",
+        "[biddingRules] rule has both sequence and patterns; use format: structured | explicit | template",
         row,
       );
     }
 
-    if (fmt === "structured" || (hasSeq && !hasPatterns && !hasPattern)) {
-      const compiled = compileStructuredRule(row, priority);
+    if (fmt === "structured" || (hasSeq && !hasPatterns)) {
+      const compiled = compileStructuredRule(row);
       if (compiled) {
-        structuredRules.push(compiled);
+        orderedRules.push({ kind: "structured", rule: compiled });
       } else {
         console.warn("[biddingRules] invalid structured rule", row);
       }
       continue;
     }
 
-    if (fmt === "explicit" || hasPatterns) {
-      let patterns: string[] = [];
-      if (Array.isArray(row.patterns)) {
-        patterns = row.patterns
-          .filter((x): x is string => typeof x === "string")
-          .map((s) => s.trim())
-          .filter(Boolean);
-      } else if (fmt === "explicit" && typeof row.pattern === "string") {
-        patterns = [(row.pattern as string).trim()].filter(Boolean);
-      }
-      if (patterns.length === 0) {
-        if (fmt === "explicit") {
-          console.warn("[biddingRules] explicit rule has no patterns", row);
+    if (hasPatterns) {
+      if (fmt === "template") {
+        const matchKeys = new Set<string>();
+        for (const p of patterns) {
+          try {
+            for (const k of expandTemplatePattern(p)) {
+              matchKeys.add(normalizeRuleKey(k));
+            }
+          } catch (e) {
+            console.warn("[biddingRules] template compile error", p, e);
+          }
         }
+        if (matchKeys.size === 0) {
+          console.warn("[biddingRules] template rule produced no keys", row);
+          continue;
+        }
+        orderedRules.push({ kind: "string", matchKeys, meaning });
         continue;
       }
-      for (const key of patterns) {
-        const parts = key.split("-").length;
-        const w = ruleWeight(priority, key.length, parts);
-        mergeStringRule(stringRules, key, meaning, w);
+
+      if (fmt === "explicit") {
+        orderedRules.push({
+          kind: "string",
+          matchKeys: new Set(patterns.map((p) => normalizeRuleKey(p))),
+          meaning,
+        });
+        continue;
       }
+
+      console.warn(
+        "[biddingRules] with `patterns`, set format: explicit | template",
+        row,
+      );
       continue;
     }
 
-    if (fmt === "template" || hasPattern) {
-      const pattern =
-        typeof row.pattern === "string" ? (row.pattern as string).trim() : "";
-      if (!pattern) {
-        console.warn("[biddingRules] template rule missing pattern", row);
-        continue;
-      }
-      try {
-        const keys = expandTemplatePattern(pattern);
-        const parts = keys[0]?.split("-").length ?? 0;
-        for (const key of keys) {
-          const w = ruleWeight(priority, key.length, parts);
-          mergeStringRule(stringRules, key, meaning, w);
-        }
-      } catch (e) {
-        console.warn("[biddingRules] template compile error", pattern, e);
-      }
-      continue;
-    }
-
-    console.warn("[biddingRules] unknown rule shape", row);
+    console.warn("[biddingRules] unknown rule shape (need sequence or patterns)", row);
   }
 
-  structuredRules.sort((a, b) => b.weight - a.weight);
-  return { stringRules, structuredRules };
+  return { orderedRules };
 }

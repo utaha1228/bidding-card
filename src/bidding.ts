@@ -2,17 +2,18 @@
 export const DENOMINATIONS = ["club", "diamond", "heart", "spade", "nt"] as const;
 export type Denomination = (typeof DENOMINATIONS)[number];
 
-const SUIT_SYMBOL: Record<Exclude<Denomination, "nt">, string> = {
-  club: "♣",
-  diamond: "♦",
-  heart: "♥",
-  spade: "♠",
+/** Suit letters: S H D C = spades, hearts, diamonds, clubs (bridge major/minor order for majors). */
+const SUIT_LETTER: Record<Exclude<Denomination, "nt">, string> = {
+  spade: "S",
+  heart: "H",
+  diamond: "D",
+  club: "C",
 };
 
-/** Display like "1♣" or "7NT" (ASCII strain letters for screen readers via aria-label). */
+/** Display like "1C" or "7NT" (canonical); `parseBidLabel` also accepts `7N` as a typo. */
 export function formatBid(level: number, denom: Denomination): string {
   if (denom === "nt") return `${level}NT`;
-  return `${level}${SUIT_SYMBOL[denom]}`;
+  return `${level}${SUIT_LETTER[denom]}`;
 }
 
 export function bidAriaLabel(level: number, denom: Denomination): string {
@@ -36,40 +37,50 @@ export function allBids(): { level: number; denom: Denomination }[] {
   return out;
 }
 
-/** Map a call label (from `formatBid` or `"Pass"`) to a strain for styling. */
-export function strainFromCallText(text: string): Denomination | "pass" | null {
+/** Map a call label to a strain (or pass / double / redouble) for styling. */
+export function strainFromCallText(
+  text: string,
+): Denomination | "pass" | "double" | "redouble" | null {
   if (text === "Pass") return "pass";
-  if (text.endsWith("NT")) return "nt";
-  for (const denom of DENOMINATIONS) {
-    if (denom === "nt") continue;
-    if (text.includes(SUIT_SYMBOL[denom])) return denom;
-  }
+  if (text === "Double") return "double";
+  if (text === "Redouble") return "redouble";
+  const p = parseBidLabel(text);
+  if (p) return p.denom;
   return null;
 }
 
 /** Parse labels produced by `formatBid`; returns null for Pass or unrecognized text. */
 export function parseBidLabel(text: string): { level: number; denom: Denomination } | null {
   if (text === "Pass") return null;
-  const nt = text.match(/^([1-7])NT$/);
-  if (nt) {
-    const level = Number(nt[1]);
+  const ntLong = text.match(/^([1-7])NT$/i);
+  if (ntLong) {
+    const level = Number(ntLong[1]);
     return { level, denom: "nt" };
   }
-  const m = text.match(/^([1-7])([♣♦♥♠])$/);
-  if (!m) return null;
-  const sym = m[2]!;
-  const map: Record<string, Denomination> = {
-    "♣": "club",
-    "♦": "diamond",
-    "♥": "heart",
-    "♠": "spade",
-  };
-  const denom = map[sym];
-  if (!denom) return null;
-  return { level: Number(m[1]), denom };
+  const ntShort = text.match(/^([1-7])N$/);
+  if (ntShort) {
+    const level = Number(ntShort[1]);
+    return { level, denom: "nt" };
+  }
+  const suit = text.match(/^([1-7])([SHDCshdc])$/);
+  if (suit) {
+    const map: Record<string, Denomination> = {
+      S: "spade",
+      s: "spade",
+      H: "heart",
+      h: "heart",
+      D: "diamond",
+      d: "diamond",
+      C: "club",
+      c: "club",
+    };
+    const denom = map[suit[2]!];
+    if (denom) return { level: Number(suit[1]), denom };
+  }
+  return null;
 }
 
-/** Total order from 1♣ (0) through 7NT (34). */
+/** Total order from 1C (0) through 7NT (34). */
 export function bidRank(level: number, denom: Denomination): number {
   return (level - 1) * 5 + DENOMINATIONS.indexOf(denom);
 }
