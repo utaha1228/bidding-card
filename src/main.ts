@@ -266,7 +266,7 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
           { wind: upcomingWind(h), text: b },
         ]),
       }))
-      .filter((x) => x.lines.length > 0);
+      .filter((x) => (x.lines.length > 0) && (x.bid !== 'Pass'));
   
     const pillClass: Record<"Pass" | "Double" | "Redouble", string> = {
       Pass: "bid-context__pill strain-tone--pass",
