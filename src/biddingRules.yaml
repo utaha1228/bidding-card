@@ -1,317 +1,366 @@
-# https://hackmd.io/@Utaha1228/BJPNT8O2be — NS = us; opp strain ( ); P / X / XX; optional (P) stripped when matching.
-# Slots: M m oM om; X Y Z = distinct suits (not NT). 1? / 2? = any suit (not NT) at that level.
-# 1A / 2A = any suit at that level not yet shown earlier in the auction (NT opener does not count as a suit).
-# NT and N both mean notrump. Uppercase SHDC only.
-# RKCB / carding / Lebensohl detail: see HackMD (not covered as full-auction keys here).
-
 rules:
+
+  # Opening bids
   - patterns:
       - "1M"
-    meaning: "12+ HCP 5+ bid suit"
+    meaning: "12+ HCP, 5+ major"
 
   - patterns:
       - "1m"
-    meaning: "12+ HCP 3+ bid suit"
-
-  # --- Weak two / three ---
-  - patterns:
-      - "2M-3M"
-      - "2m-3m"
-    meaning: "Signoff; raise on total tricks (LTT)."
+    meaning: "12+ HCP, 3+ minor"
 
   - patterns:
-      - "2M-4M"
-      - "2m-4m"
-    meaning: "Signoff preempt raise."
+      - "2M"
+      - "2D"
+    meaning: "Weak preempt, 6-10 HCP, 6+ suit (rule of 2/3/4)"
 
   - patterns:
+      - "2C"
+    meaning: "22+ HCP, or 18+ HCP single suited"
+
+  - patterns:
+      - "1NT"
+    meaning: "15-17 HCP balanced"
+
+  - patterns:
+      - "2NT"
+    meaning: "20-21 HCP balanced"
+
+  - patterns:
+      - "3NT"
+    meaning: "Gambling 3NT"
+
+  # Weak opening responses
+  - patterns:
+      - "2M-2NT"
       - "2D-2NT"
-      - "2H-2NT"
-      - "2S-2NT"
-    meaning: "Ogust over weak two (15+ HCP)."
+    meaning: "Ogust 15+HCP"
 
   - patterns:
-      - "2C-2H"
-      - "2C-2S"
-      - "2C-3C"
-      - "2C-3D"
-    meaning: "8+ HCP, 5+ in suit (not waiting 2D)."
+      - "2X-3X"
+      - "2X-4X"
+    meaning: "Preemptive or to play"
 
   - patterns:
-      - "2C-2NT"
-    meaning: "8+ HCP balanced (prefer 2D waiting first)."
-
-  # --- Misc relays (two new suits, then NT) ---
-  - patterns:
-      - "1X-1Y-1NT-2C"
-    meaning: "Relay to 2D: weak diamonds or invitational."
+      - "2X-2NT-3C"
+    meaning: "6-7 HCP, weak suit"
 
   - patterns:
-      - "1X-1Y-1NT-2D"
-    meaning: "Game force; awkward for 3NT."
+      - "2X-2NT-3D"
+    meaning: "6-7 HCP, strong suit"
 
   - patterns:
-      - "P-1M-2m"
-    meaning: "2-way Drury (inv): 2C = 3-card fit, 2D = 4-card fit."
+      - "2X-2NT-3H"
+    meaning: "8-9 HCP, weak suit"
 
-  # --- 1 major: support ---
+  - patterns:
+      - "2X-2NT-3S"
+    meaning: "8-9 HCP, strong suit"
+
+  - patterns:
+      - "2X-2NT-3NT"
+    meaning: "9 HCP, AKQ in suit"
+
+
+  # 1M responses
   - patterns:
       - "1M-P"
-    meaning: "0–5 HCP (pass with <6)."
-
-  - patterns:
-      - "1M-2M"
-    meaning: "8–9 HCP, 3+ trumps."
-
-  - patterns:
-      - "1M-2NT"
-    meaning: "Jacoby 2NT (GF+), no splinter planned."
-
-  - patterns:
-      - "1M-3M"
-    meaning: "Preemptive raise."
-
-  - patterns:
-      - "1M-1NT-2M-P"
-    meaning: "Opener 6–7 HCP, 3 trumps (via 1NT then 2M)."
-
-  - patterns:
-      - "1M-1NT-2X-2M"
-    meaning: "6–7 HCP, 3 trumps (new suit then 2M)."
-
-  - patterns:
-      - "1M-1NT-2M-3M"
-      - "1M-1NT-2X-3M"
-    meaning: "10–11 HCP, 3 trumps."
-
-  # --- 1 major: no fit ---
-  - patterns:
-      - "1H-1S"
-    meaning: "4+ spades."
+    meaning: "5- HCP"
 
   - patterns:
       - "1M-1NT"
-    meaning: "6–11 HCP, forcing (except later 1M-1NT-2X-4M slam try)."
+    meaning: "6-11 HCP, forcing"
+
+  - patterns:
+      - "1M-1NT-2m-2M"
+      - "1S-1NT-2H-2S"
+      - "1H-1NT-2S-3H"
+    meaning: "6-7 HCP, 3+ support"
+
+  - patterns:
+      - "1M-2M"
+    meaning: "8-9 HCP, 3+ support"
+
+  - patterns:
+      - "1M-1NT-2m-3M"
+      - "1S-1NT-2H-3S"
+      - "1M-1NT-2M-3M"
+    meaning: "10-11 HCP, 3+ support"
+
+  - patterns:
+      - "1M-3M"
+    meaning: "Preemptive, 5- HCP, 4+ support"
+
+  - patterns:
+      - "1M-4M"
+    meaning: "Preemptive, 5- HCP, 5+ support"
+
+  - patterns:
+      - "1M-2NT"
+    meaning: "Jacoby 2NT, GF, 4+ support"
+
+  - patterns:
+      - "1M-4m"
+      - "1S-4H"
+      - "1H-3S"
+    meaning: "Splinter, GF, 4+ support, shortness in bid suit"
+
+
+  # 1M no support
+  - patterns:
+      - "1H-1S"
+    meaning: "6+ HCP 4+ spades, forcing"
 
   - patterns:
       - "1S-2H"
-    meaning: "5+ hearts."
+    meaning: "Game forcing, 5+ hearts"
 
   - patterns:
       - "1M-2m"
-    meaning: "GF; shows minor preference."
+    meaning: "Game forcing, show minor suit preference"
 
   - patterns:
-      - "1M-3X"
-    meaning: "6+ cards, invitational new suit."
+      - "1M-3m"
+      - "1S-3H"
+    meaning: "Invitational, 6+ bid suit"
 
-  # --- 1 major: opener after 1NT response ---
+
+  # Opener rebid after 1M-1NT
   - patterns:
       - "1M-1NT-2X"
-    meaning: "12–17 HCP, 4+ unless 5332."
+    meaning: "12-17 HCP, 4+ new suit"
 
   - patterns:
       - "1H-1NT-2S"
-    meaning: "Reverse: 16+ HCP, unbalanced."
+    meaning: "Reverse bid, 16+ HCP, forcing"
 
   - patterns:
       - "1M-1NT-2M"
-    meaning: "12–14 HCP, 6+ major."
+    meaning: "12-14 HCP, 6+ major"
 
   - patterns:
       - "1M-1NT-2NT"
-    meaning: "18–19 HCP, 5332."
+    meaning: "18-19 HCP, balanced"
 
   - patterns:
       - "1M-1NT-3M"
-    meaning: "15–17 HCP, 6+ major."
+    meaning: "15-17 HCP, 6+ major"
 
   - patterns:
       - "1M-1NT-3m"
-    meaning: "18+ GF, 6+ major or 5–4+ unbalanced."
+    meaning: "18+ HCP, GF, unbalanced, 3+ minor unless 6+ major"
 
   - patterns:
       - "1M-1NT-3NT"
-    meaning: "To play (gambling-ish)."
+    meaning: "To play, somewhat gambling style"
 
-  # --- 1 minor opening responses ---
+
+  # 1m responses
+
+  - patterns:
+      - "1C-1D"
+    meaning: "6+ HCP 4+ diamonds, forcing"
+
   - patterns:
       - "1m-1H"
-    meaning: "4+ hearts."
+    meaning: "6+ HCP 4+ hearts, forcing"
 
   - patterns:
       - "1m-1S"
-    meaning: "4+ spades."
+    meaning: "6+ HCP 4+ spades, forcing"
 
   - patterns:
       - "1m-2m"
-    meaning: "11+ HCP, 4+ support."
+    meaning: "11+ HCP, 4+ support"
 
   - patterns:
       - "1m-3m"
-    meaning: "10- HCP, 5+ support."
+    meaning: "0-6 HCP, 5+ support, preemptive"
 
   - patterns:
       - "1m-1NT"
-    meaning: "6–9 HCP."
+    meaning: "6-9 HCP balanced"
 
   - patterns:
       - "1m-2NT"
-    meaning: "10+ HCP, invite 3NT."
+    meaning: "10+ HCP balanced, invite to 3NT"
 
-  # --- 1NT opening responses ---
+
+  # NT responses
+  - patterns:
+      - "1NT-P"
+    meaning: "0-7 HCP"
+
   - patterns:
       - "1NT-2C"
-    meaning: "Stayman (8+ or garbage)."
+    meaning: "Stayman"
 
   - patterns:
       - "1NT-2D"
+    meaning: "Transfer to hearts"
+
+  - patterns:
       - "1NT-2H"
-    meaning: "Transfers (D→H, H→S); super-accept 17 with 4+ fit."
+    meaning: "Transfer to spades"
 
   - patterns:
       - "1NT-2S"
-    meaning: "Balanced invite or club transfer (2NT decline, 3C accept)."
+    meaning: "Transfer to clubs or balanced invite"
 
   - patterns:
       - "1NT-2NT"
-    meaning: "Transfer to diamonds."
+    meaning: "Transfer to diamonds"
 
   - patterns:
       - "1NT-3C"
-    meaning: "5–5 minors, weak."
+    meaning: "5-5 minors, pass or correct"
 
   - patterns:
       - "1NT-3D"
-    meaning: "5–5 minors, GF."
+    meaning: "5-5 minors, GF"
 
   - patterns:
       - "1NT-3H"
-    meaning: "31(54) GF."
+    meaning: "31(54) shape, GF"
 
   - patterns:
       - "1NT-3S"
-    meaning: "13(54) GF."
+    meaning: "13(54) shape, GF"
 
   - patterns:
       - "1NT-3NT"
-    meaning: "10–13 HCP balanced."
+    meaning: "10-13 HCP, to play"
 
   - patterns:
       - "1NT-4D"
+    meaning: "Texas transfer to hearts"
+
+  - patterns:
       - "1NT-4H"
-    meaning: "Texas (6+ major, no slam try); Jacoby xfer if slam interest."
+    meaning: "Texas transfer to spades"
 
   - patterns:
       - "1NT-4NT"
-    meaning: "15–17 HCP, invite 6NT."
-
+    meaning: "15-17 HCP balanced, invite to 6NT"
+  
   - patterns:
       - "1NT-5NT"
-    meaning: "20–21 HCP, invite 7NT."
-
+    meaning: "20-21 HCP balanced, invite to 7NT"
+  
   - patterns:
       - "1NT-6NT"
-    meaning: "18–19 HCP."
+    meaning: "18-19 HCP balanced"
+  
 
-  # --- 2C strong ---
+  # 2C structure
   - patterns:
       - "2C-2D"
-    meaning: "Waiting (2/1)."
-
-  # --- Overcall / balancing ---
-  - patterns:
-      - "(1C)-2C"
-      - "(1D)-2D"
-      - "(1H)-2H"
-      - "(1S)-2S"
-    meaning: "Michaels: 5–5 majors or major + minor."
+    meaning: "Waiting"
 
   - patterns:
-      - "(1C)-2NT"
-      - "(1D)-2NT"
-      - "(1H)-2NT"
-      - "(1S)-2NT"
-    meaning: "Unusual 2NT: 5–5 in two lowest unbid suits."
+      - "2C-2M"
+      - "2C-3m"
+    meaning: "8+ HCP, 5+ suit"
 
   - patterns:
-      - "(1NT)-2C"
-    meaning: "Landy: 5–4+ majors."
+      - "2C-2NT"
+    meaning: "8+ HCP, balanced"
 
-  - patterns:
-      - "(1NT)-X"
-    meaning: "15+ HCP, penalty."
 
-  - patterns:
-      - "(2D)-X"
-      - "(2H)-X"
-      - "(2S)-X"
-    meaning: "Takeout 14+ (Lebensohl on)."
-
-  - patterns:
-      - "(1C)-X"
-      - "(1D)-X"
-      - "(1H)-X"
-      - "(1S)-X"
-    meaning: "Takeout 12+ HCP."
-
-  # --- After their overcall (advancer) ---
+  # Competitive bidding
   - patterns:
       - "1m-(1H)-X"
-    meaning: "Negative: 6+ HCP, 4 spades."
+    meaning: "Negative double, 6+ HCP, 4 spades"
+  
+  - patterns:
+      - "1m-(1H)-1S"
+    meaning: "6+ HCP, 5+ spades"
 
   - patterns:
       - "1m-(1S)-X"
-    meaning: "Negative: 8+ HCP, 4+ hearts."
+    meaning: "Negative double, 8+ HCP, 4+ hearts"
 
   - patterns:
       - "1H-(1S)-X"
-    meaning: "Negative: 8+ HCP, both minors, no heart fit."
+    meaning: "Negative double, 8+ HCP, 44+ minors"
 
   - patterns:
       - "1C-(1D)-X"
-    meaning: "Negative: 6+ HCP, both majors."
+    meaning: "Negative double, 6+ HCP, 44+ majors"
 
-  - patterns:
-      - "1X-(1Y)-2X"
-    meaning: "Weak raise in opener’s suit: ≤9 HCP, 3+ (4+ if minor opened)."
-
-  - patterns:
-      - "1X-(1Y)-2Y"
-    meaning: "10–11 HCP; cue their suit (fit / limit raise)."
-
-  - patterns:
-      - "1X-(1Y)-3X"
-    meaning: "Preemptive jump in opener’s suit (weaker than 2X)."
-
-  - patterns:
-      - "1X-(1Y)-2Z"
-    meaning: "10+ HCP, 5+ suit, forcing."
-
-  - patterns:
-      - "1X-(1Y)-1Z"
-    meaning: "Natural 6+ (1m-(1H)-1S = 5+ spades)."
 
   - patterns:
       - "1X-(1Y)-1NT"
-    meaning: "6–10 HCP, stopper."
+    meaning: "6-10 HCP, stopper in opponent's suit"
+
+  - patterns:
+      - "1M-(?)-2M"
+    meaning: "6-9 HCP, 3+ support"
+
+  - patterns:
+      - "1m-(?)-2m"
+    meaning: "6-9 HCP, 5+ support"
+
+  - patterns:
+      - "1X-(1Y)-2Z"
+    meaning: "10+ HCP, 5+ suit, forcing"
 
   - patterns:
       - "1X-(1Y)-2NT"
-    meaning: "Balanced invite."
+    meaning: "Invitational, balanced and stopper in opponent's suit"
 
   - patterns:
       - "1X-(1Y)-3NT"
-    meaning: "Balanced game force."
+    meaning: "Game forcing, balanced and stopper in opponent's suit"
+
+
+  # Overcalls
+  - patterns:
+      - "(1X)-1Y"
+    meaning: "5+ suit, 8+ HCP"
 
   - patterns:
-      - "1X-(1Y)-X"
-    meaning: "Negative double: 6+ (8+ if reply forces 2-level major)."
+      - "(1M)-2m"
+      - "(1S)-2H"
+      - "(1D)-2C"
+    meaning: "5+ suit, 11+ HCP"
 
-  # --- Doubles / redoubles ---
   - patterns:
-      - "1C-(X)-XX"
-      - "1D-(X)-XX"
-      - "1H-(X)-XX"
-      - "1S-(X)-XX"
-    meaning: "10+ HCP after takeout double; else ~9−."
+      - "(1X)-X"
+    meaning: "Takeout double, 12+ HCP"
+
+  - patterns:
+      - "(1X)-2NT"
+    meaning: "Unusual NT, 5-5 lowest unbid suits"
+
+  - patterns:
+      - "(1X)-2X"
+    meaning: "Michaels cuebid, 5-5 majors or major+minor"
+
+
+  # Defense vs NT
+  - patterns:
+      - "(1NT)-2C"
+    meaning: "Landy, 54+ majors"
+
+  - patterns:
+      - "(1NT)-2D"
+      - "(1NT)-2H"
+      - "(1NT)-2S"
+    meaning: "6+ suit"
+
+  - patterns:
+      - "(1NT)-X"
+    meaning: "15+ HCP, penalty"
+
+
+  # Doubles
+  - patterns:
+      - "1X-(1Y)-1M-(1Z)-X"
+      - "1X-(1Y)-1M-(2Z)-X"
+      - "1X-(1Y)-1M-X"
+    meaning: "Support double, 3-card support"
+
+  - patterns:
+      - "1X-(X)-XX"
+    meaning: "10+ HCP"
