@@ -1,7 +1,6 @@
 import "./style.css";
 import { appendCall, auctionRows, upcomingWind, undoLastCall, type AuctionCall } from "./auction";
 import {
-  lastContractFromAuction,
   legalBidsAfter,
   legalNonStrainCalls,
   isCallLegal,
@@ -246,7 +245,7 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
           console.log(last);
         }
       }
-      
+
       if (last !== 'Pass') {
         for (const line of meaningsForAuctionHistory(h)) {
           const p = document.createElement("p");
