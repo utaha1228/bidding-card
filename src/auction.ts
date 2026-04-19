@@ -28,6 +28,12 @@ export function appendCall(history: AuctionCall[], text: string): AuctionCall[] 
   return h;
 }
 
+/** Drop the last call, if any (same sequence as “go back” one step). */
+export function undoLastCall(history: AuctionCall[]): AuctionCall[] {
+  if (history.length === 0) return history;
+  return history.slice(0, -1);
+}
+
 /** Append a strain bid for the next player (same as `appendCall` with `formatBid`). */
 export function appendBid(history: AuctionCall[], level: number, denom: Denomination): AuctionCall[] {
   return appendCall(history, formatBid(level, denom));

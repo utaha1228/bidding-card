@@ -52,7 +52,7 @@ export function strainFromCallText(
 /** Parse labels produced by `formatBid`; returns null for Pass or unrecognized text. */
 export function parseBidLabel(text: string): { level: number; denom: Denomination } | null {
   if (text === "Pass") return null;
-  const ntLong = text.match(/^([1-7])NT$/i);
+  const ntLong = text.match(/^([1-7])NT$/);
   if (ntLong) {
     const level = Number(ntLong[1]);
     return { level, denom: "nt" };
@@ -62,17 +62,13 @@ export function parseBidLabel(text: string): { level: number; denom: Denominatio
     const level = Number(ntShort[1]);
     return { level, denom: "nt" };
   }
-  const suit = text.match(/^([1-7])([SHDCshdc])$/);
+  const suit = text.match(/^([1-7])([SHDC])$/);
   if (suit) {
     const map: Record<string, Denomination> = {
       S: "spade",
-      s: "spade",
       H: "heart",
-      h: "heart",
       D: "diamond",
-      d: "diamond",
       C: "club",
-      c: "club",
     };
     const denom = map[suit[2]!];
     if (denom) return { level: Number(suit[1]), denom };

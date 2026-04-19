@@ -3,7 +3,7 @@ import {
   normalizeRuleKey,
   stripLeadingOurPassOnce,
 } from "./auctionKey";
-import { structuredRuleMatches } from "./structuredMatch";
+import { compiledVariantMatchesKey } from "./patternMatch";
 import type { AuctionCall } from "../auction";
 import type { CompiledRules } from "./types";
 
@@ -17,16 +17,12 @@ export function resolveMeanings(history: AuctionCall[], compiled: CompiledRules)
 
   function collectForStringKey(keyStr: string): void {
     for (const entry of compiled.orderedRules) {
-      if (entry.kind === "string") {
-        if (!entry.matchKeys.has(keyStr)) continue;
-      } else {
-        if (!structuredRuleMatches(entry.rule, history)) continue;
-      }
+      const matched = entry.variants.some((v) => compiledVariantMatchesKey(v, keyStr));
+      if (!matched) continue;
 
-      const text = entry.kind === "string" ? entry.meaning : entry.rule.meaning;
-      if (seen.has(text)) continue;
-      seen.add(text);
-      out.push(text);
+      if (seen.has(entry.meaning)) continue;
+      seen.add(entry.meaning);
+      out.push(entry.meaning);
     }
   }
 

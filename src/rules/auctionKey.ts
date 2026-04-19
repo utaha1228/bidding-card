@@ -38,17 +38,16 @@ export function buildAuctionRuleKey(history: AuctionCall[]): string {
   return parts.join("-");
 }
 
-/** Uppercase SHDC; normalize notrump to `…NT` (including mistaken `…N`). */
+/** Normalize notrump tokens to `…NT` (`N` and `NT` both accepted). */
 function canonStrainToken(t: string): string {
-  const parenSuit = t.match(/^\(([1-7])([shdcSHDC])\)$/);
-  if (parenSuit) return `(${parenSuit[1]}${parenSuit[2].toUpperCase()})`;
-  const bareSuit = t.match(/^([1-7])([shdcSHDC])$/);
-  if (bareSuit) return `${bareSuit[1]}${bareSuit[2].toUpperCase()}`;
-
-  const parenNt = t.match(/^\(([1-7])NT?\)$/i);
+  const parenNt = t.match(/^\(([1-7])\)NT$/);
   if (parenNt) return `(${parenNt[1]}NT)`;
-  const bareNt = t.match(/^([1-7])NT?$/i);
+  const bareNt = t.match(/^([1-7])NT$/);
   if (bareNt) return `${bareNt[1]}NT`;
+  const parenN = t.match(/^\(([1-7])\)N\)$/);
+  if (parenN) return `(${parenN[1]}NT)`;
+  const bareN = t.match(/^([1-7])N$/);
+  if (bareN) return `${bareN[1]}NT`;
 
   return t;
 }

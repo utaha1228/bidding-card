@@ -1,5 +1,5 @@
 import "./style.css";
-import { appendCall, auctionRows, upcomingWind, type AuctionCall } from "./auction";
+import { appendCall, auctionRows, upcomingWind, undoLastCall, type AuctionCall } from "./auction";
 import {
   lastContractFromAuction,
   legalBidsAfter,
@@ -11,6 +11,7 @@ import {
   allBids,
   bidAriaLabel,
   formatBid,
+  parseBidLabel,
   strainFromCallText,
   type Denomination,
 } from "./bidding";
@@ -212,12 +213,8 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
   hNext.className = "bid-context__heading";
   hNext.textContent = "Possible next calls";
   hNext.title =
-    "Pass, double, and redouble when legal; strain bids only if your bidding rules define a meaning for that auction.";
+    "All bids that are defined in the bidding card";
   bottom.appendChild(hNext);
-
-  const nextMeta = document.createElement("p");
-  nextMeta.className = "bid-context__next-meta";
-  bottom.appendChild(nextMeta);
 
   const list = document.createElement("ul");
   list.className = "bid-context__list";
@@ -227,42 +224,73 @@ function createBidContextPanel(getHistory: () => AuctionCall[]): {
 
   function redraw() {
     const h = getHistory();
-    const last = lastContractFromAuction(h);
 
     curLabel.className = "bid-context__call";
     curMeanings.replaceChildren();
 
-    if (!last) {
+    if (h.length === 0) {
       curLabel.textContent = "—";
       curLabel.classList.add("bid-context__call--empty");
     } else {
-      curLabel.textContent = formatBid(last.level, last.denom);
-      curLabel.classList.add(`strain-tone--${last.denom}`);
-      for (const line of meaningsForAuctionHistory(h)) {
-        const p = document.createElement("p");
-        p.className = "bid-context__meaning-block";
-        p.textContent = line;
-        curMeanings.appendChild(p);
+      const last = h[h.length - 1].text;
+      curLabel.textContent = last;
+      if (last === 'Pass' || last === 'Double' || last == 'Redouble') {
+        curLabel.classList.add(`strain-tone--${last.toLowerCase()}`);
+      }
+      else {
+        const bid = parseBidLabel(last);
+        if (bid) {
+          curLabel.classList.add(`strain-tone--${bid.denom}`);
+        }
+        else{
+          console.log(last);
+        }
+      }
+      
+      if (last !== 'Pass') {
+        for (const line of meaningsForAuctionHistory(h)) {
+          const p = document.createElement("p");
+          p.className = "bid-context__meaning-block";
+          p.textContent = line;
+          curMeanings.appendChild(p);
+        }
       }
     }
 
     list.replaceChildren();
-    nextMeta.textContent = `Next to speak: ${upcomingWind(h)}`;
 
-    const extras = legalNonStrainCalls(h);
+    const extras = legalNonStrainCalls(h)
+      .map((b) => ({
+        bid: b,
+        lines: meaningsForAuctionHistory([
+          ...h,
+          { wind: upcomingWind(h), text: b },
+        ]),
+      }))
+      .filter((x) => x.lines.length > 0);
+  
     const pillClass: Record<"Pass" | "Double" | "Redouble", string> = {
       Pass: "bid-context__pill strain-tone--pass",
       Double: "bid-context__pill strain-tone--double",
       Redouble: "bid-context__pill strain-tone--redouble",
     };
 
-    for (const t of extras) {
+    for (const { bid: b, lines } of extras) {
       const li = document.createElement("li");
       li.className = "bid-context__list-item";
       const call = document.createElement("span");
-      call.className = pillClass[t];
-      call.textContent = t;
+      call.className = pillClass[b];
+      call.textContent = b;
       li.appendChild(call);
+      list.appendChild(li);
+
+      for (const line of lines) {
+        const mean = document.createElement("p");
+        mean.className = "bid-context__list-meaning";
+        mean.textContent = line;
+        li.appendChild(mean);
+      }
+
       list.appendChild(li);
     }
 
@@ -323,19 +351,54 @@ const h1 = document.createElement("h1");
 h1.textContent = "Bridge bidding card";
 pageMain.appendChild(h1);
 
+const auctionToolbar = document.createElement("div");
+auctionToolbar.className = "auction-toolbar";
+auctionToolbar.setAttribute("aria-label", "Auction history controls");
+
+const btnUndo = document.createElement("button");
+btnUndo.type = "button";
+btnUndo.className = "auction-toolbar__btn";
+btnUndo.textContent = "Undo";
+btnUndo.setAttribute("aria-label", "Remove the last call from the auction");
+btnUndo.disabled = true;
+
+const btnClear = document.createElement("button");
+btnClear.type = "button";
+btnClear.className = "auction-toolbar__btn";
+btnClear.textContent = "Clear auction";
+btnClear.setAttribute("aria-label", "Clear the entire bidding sequence");
+btnClear.disabled = true;
+
+auctionToolbar.append(btnUndo, btnClear);
+pageMain.appendChild(auctionToolbar);
+
 let history: AuctionCall[] = [];
 const getHistory = () => history;
-
-function refreshAll() {
-  auctionStrip.redraw();
-  bidContext.redraw();
-  bidsPanel.syncLegal();
-}
 
 const auctionStrip = createAuctionStrip(getHistory);
 const bidContext = createBidContextPanel(getHistory);
 const bidsPanel = createBidsPanel(getHistory, (text) => {
   history = appendCall(history, text);
+  refreshAll();
+});
+
+function refreshAll() {
+  auctionStrip.redraw();
+  bidContext.redraw();
+  bidsPanel.syncLegal();
+  btnUndo.disabled = history.length === 0;
+  btnClear.disabled = history.length === 0;
+}
+
+btnUndo.addEventListener("click", () => {
+  if (history.length === 0) return;
+  history = undoLastCall(history);
+  refreshAll();
+});
+
+btnClear.addEventListener("click", () => {
+  if (history.length === 0) return;
+  history = [];
   refreshAll();
 });
 
