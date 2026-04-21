@@ -37,28 +37,35 @@ rules:
     meaning: "Ogust 15+HCP"
 
   - patterns:
-      - "2X-3X"
-      - "2X-4X"
+      - "2M-3M"
+      - "2M-4M"
+      - "2D-3D"
+      - "2D-4D"
     meaning: "Preemptive or to play"
 
   - patterns:
-      - "2X-2NT-3C"
+      - "2M-2NT-3C"
+      - "2D-2NT-3C"
     meaning: "6-7 HCP, weak suit"
 
   - patterns:
-      - "2X-2NT-3D"
+      - "2M-2NT-3D"
+      - "2D-2NT-3D"
     meaning: "6-7 HCP, strong suit"
 
   - patterns:
-      - "2X-2NT-3H"
+      - "2M-2NT-3H"
+      - "2D-2NT-3H"
     meaning: "8-9 HCP, weak suit"
 
   - patterns:
-      - "2X-2NT-3S"
+      - "2M-2NT-3S"
+      - "2D-2NT-3S"
     meaning: "8-9 HCP, strong suit"
 
   - patterns:
-      - "2X-2NT-3NT"
+      - "2M-2NT-3NT"
+      - "2D-2NT-3NT"
     meaning: "9 HCP, AKQ in suit"
 
 
@@ -104,6 +111,27 @@ rules:
       - "1S-4H"
       - "1H-3S"
     meaning: "Splinter, GF, 4+ support, shortness in bid suit"
+
+  ## Jacoby 2NT follow-up
+  - patterns:
+      - "1M-2NT-3A"
+    meaning: "shortness in bid suit"
+  
+  - patterns:
+      - "1M-2NT-3M"
+    meaning: "14+ HCP, mild slam interest"
+  
+  - patterns:
+      - "1M-2NT-4A"
+    meaning: "5+ in bid suit"
+  
+  - patterns:
+      - "1M-2NT-4M"
+    meaning: "Minimum, 12-13 HCP"
+  
+  - patterns:
+      - "1M-2NT-4NT"
+    meaning: "Key card ask"
 
 
   # 1M no support
@@ -288,6 +316,9 @@ rules:
       - "1C-(1D)-X"
     meaning: "Negative double, 6+ HCP, 44+ majors"
 
+  - patterns:
+      - "1C-(1D)-1M"
+    meaning: "6+ HCP, 4+ bid suit"
 
   - patterns:
       - "1X-(1Y)-1NT"
@@ -302,7 +333,8 @@ rules:
     meaning: "6-9 HCP, 5+ support"
 
   - patterns:
-      - "1X-(1Y)-2Z"
+      - "1X-(1S)-2Y"
+      - "1m-(1H)-2om"
     meaning: "10+ HCP, 5+ suit, forcing"
 
   - patterns:
@@ -324,6 +356,29 @@ rules:
       - "(1S)-2H"
       - "(1D)-2C"
     meaning: "5+ suit, 11+ HCP"
+  
+  - patterns:
+      - "(1M)-3m"
+      - "(1M)-4m"
+      - "(1M)-5m"
+      - "(1S)-3H"
+      - "(1S)-4H"
+      - "(1H)-2S"
+      - "(1H)-3S"
+      - "(1H)-4S"
+      - "(1m)-2M"
+      - "(1m)-3M"
+      - "(1m)-4M"
+      - "(1C)-2D"
+      - "(1C)-3D"
+      - "(1C)-4D"
+      - "(1C)-5D"
+      - "(1D)-3C"
+      - "(1D)-4C"
+      - "(1D)-5C"
+      - "(1NT)-3X"
+      - "(1NT)-4X"
+    meaning: "Preempt"
 
   - patterns:
       - "(1X)-X"
@@ -347,7 +402,7 @@ rules:
       - "(1NT)-2D"
       - "(1NT)-2H"
       - "(1NT)-2S"
-    meaning: "6+ suit"
+    meaning: "6+ bid suit"
 
   - patterns:
       - "(1NT)-X"
@@ -364,3 +419,9 @@ rules:
   - patterns:
       - "1X-(X)-XX"
     meaning: "10+ HCP"
+
+  # Lebensohl
+  - patterns:
+      - "1NT-(2X)-2NT"
+      - "(2M)-X-2NT"
+      - "(2D)-X-2NT"
