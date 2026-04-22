@@ -155,7 +155,8 @@ rules:
 
   # Opener rebid after 1M-1NT
   - patterns:
-      - "1M-1NT-2X"
+      - "1M-1NT-2m"
+      - "1S-1NT-2H"
     meaning: "12-17 HCP, 4+ new suit"
 
   - patterns:
@@ -212,9 +213,27 @@ rules:
   - patterns:
       - "1m-2NT"
     meaning: "10+ HCP balanced, invite to 3NT"
+  
+  ## 1m-1NT
+  - patterns:
+      - "1m-1NT-2M"
+      - "1C-1NT-2D"
+    meaning: "Reverse bid, 16+ HCP, 4+ bid suit"
+  
+  - patterns:
+      - "1m-1NT-2m"
+    meaning: "5+ bid suit, escape from NT"
+  
+  - patterns:
+      - "1m-1NT-3m"
+    meaning: "5+ bid suit, 15-17 HCP"
 
+  - patterns:
+      - "1m-1NT-3M"
+      - "1C-1NT-3D"
+    meaning: "18+ HCP, 4+ bid suit"
 
-  # NT responses
+  # 1 NT responses
   - patterns:
       - "1NT-P"
     meaning: "0-7 HCP"
@@ -225,19 +244,19 @@ rules:
 
   - patterns:
       - "1NT-2D"
-    meaning: "Transfer to hearts"
+    meaning: "Transfer to heart"
 
   - patterns:
       - "1NT-2H"
-    meaning: "Transfer to spades"
+    meaning: "Transfer to spade"
 
   - patterns:
       - "1NT-2S"
-    meaning: "Transfer to clubs or balanced invite"
+    meaning: "Transfer to club or balanced invite"
 
   - patterns:
       - "1NT-2NT"
-    meaning: "Transfer to diamonds"
+    meaning: "Transfer to diamond"
 
   - patterns:
       - "1NT-3C"
@@ -279,6 +298,22 @@ rules:
       - "1NT-6NT"
     meaning: "18-19 HCP balanced"
   
+  # 2NT response
+  - patterns:
+      - "2NT-3C"
+    meaning: "Stayman"
+  
+  - patterns:
+      - "2NT-3D"
+    meaning: "Transfer to heart"
+  
+  - patterns:
+      - "2NT-3H"
+    meaning: "Transfer to spade"
+  
+  - patterns:
+      - "2NT-3N"
+    meaning: "To play"
 
   # 2C structure
   - patterns:
@@ -293,7 +328,77 @@ rules:
   - patterns:
       - "2C-2NT"
     meaning: "8+ HCP, balanced"
+  
+  ## 2C-2D-2NT system on
+  - patterns:
+      - "2C-2D-2NT"
+    meaning: "22-24 balanced"
 
+  - patterns:
+      - "2C-2D-2NT-3C"
+    meaning: "Stayman"
+
+  - patterns:
+      - "2C-2D-2NT-3D"
+    meaning: "Transfer to heart"
+
+  - patterns:
+      - "2C-2D-2NT-3H"
+    meaning: "Transfer to spade"
+
+  # Common opener rebid after responding 1 of a suit
+  - patterns:
+      - "1X-1Y-1Z"
+    meaning: "4+ bid suit, forcing"
+  
+  - patterns:
+      - "1D-1M-2C"
+      - "1H-1S-2m"
+    meaning: "12-17 HCP, 4+ bid suit"
+  
+  - patterns:
+      - "1C-1S-2H"
+      - "1C-1M-2D"
+      - "1D-1S-2H"
+    meaning: "Reverse bid, 16+ HCP, 4+ bid suit"
+
+  - patterns:
+      - "1X-1Y-1NT"
+    meaning: "12-17 HCP balanced"
+  
+  - patterns:
+      - "1X-1Y-2Y"
+    meaning: "12-14 HCP support in partner's suit"
+  
+  - patterns:
+      - "1M-1Y-2M"
+    meaning: "12-14 HCP 6+ major"
+  
+  - patterns:
+      - "1m-1Y-2m"
+    meaning: "12-14 HCP 5+ minor"
+
+  - patterns:
+      - "1X-1Y-2NT"
+    meaning: "18-19 HCP balanced"
+
+  - patterns:
+      - "1X-1Y-2NT"
+    meaning: "18-19 HCP balanced"
+
+  ## 1X-1Y-1NT response
+  - patterns:
+      - "1X-1Y-1NT-2C"
+    meaning: "Artificial relay to diamond, invitational or weak diamond"
+  
+  - patterns:
+      - "1X-1Y-1NT-2D"
+    meaning: "Artificial game forcing"
+  
+  ## 1X-1Y-2NT response
+  - patterns:
+      - "1X-1Y-2NT-3C"
+    meaning: "checkback"
 
   # Competitive bidding
   - patterns:
