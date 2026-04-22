@@ -328,12 +328,26 @@ rules:
   - patterns:
       - "2C-2NT"
     meaning: "8+ HCP, balanced"
-  
-  ## 2C-2D-2NT system on
+
+  ## Opener response
+
+  - patterns:
+      - "2C-2D-2M"
+    meaning: "5+ bid suit, forcing"
+
   - patterns:
       - "2C-2D-2NT"
-    meaning: "22-24 balanced"
+    meaning: "22-24 HCP balanced"
 
+  - patterns:
+      - "2C-2D-3m"
+    meaning: "5+ bid suit, forcing" 
+  
+  - patterns:
+      - "2C-2D-3NT"
+    meaning: "25-27 HCP balanced"
+  
+  ## 2C-2D-2NT system on
   - patterns:
       - "2C-2D-2NT-3C"
     meaning: "Stayman"
@@ -399,6 +413,30 @@ rules:
   - patterns:
       - "1X-1Y-2NT-3C"
     meaning: "checkback"
+
+  ## 4th suit game forcing
+  - patterns:
+      - "1C-1D-1H-1S"
+      - "1C-1D-1S-2H"
+      - "1C-1H-1S-2D"
+      - "1D-1M-2C-2oM"
+      - "1H-1S-2C-2D"
+      - "1H-1S-2D-3C"
+    meaning: "4th suit game forcing, concerns in 3NT"
+
+  ## Misc
+  - patterns:
+      - "1X-1Y-1Z-1NT"
+    meaning: "6-9 HCP balanced"
+
+  - patterns:
+      - "1X-1Y-1Z-2NT"
+    meaning: "10-11 HCP balanced"
+
+  - patterns:
+      - "1X-1Y-1Z-3NT"
+    meaning: "12+ HCP balanced"
+
 
   # Competitive bidding
   - patterns:
