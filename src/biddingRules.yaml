@@ -310,6 +310,14 @@ rules:
   - patterns:
       - "2NT-3H"
     meaning: "Transfer to spade"
+
+  - patterns:
+      - "2NT-3S"
+    meaning: "Transfer to club"
+  
+  - patterns:
+      - "2NT-4C"
+    meaning: "Transfer to diamond"
   
   - patterns:
       - "2NT-3N"
@@ -359,6 +367,13 @@ rules:
   - patterns:
       - "2C-2D-2NT-3H"
     meaning: "Transfer to spade"
+  
+  ## 2C-2D second negative
+  - patterns:
+      - "2C-2D-2M-3C"
+      - "2C-2D-3C-3D"
+      - "2C-2D-3D-4C"
+    meaning: "Second negative, 0-3 HCP"
 
   # Common opener rebid after responding 1 of a suit
   - patterns:
@@ -568,3 +583,15 @@ rules:
       - "1NT-(2X)-2NT"
       - "(2M)-X-2NT"
       - "(2D)-X-2NT"
+    meaning: "Lebensohl, relay to 3C"
+
+  # reverse bid 2N artificial weak
+  - patterns:
+      - "1m-1NT-2M-2NT"
+      - "1C-1NT-2D-2NT"
+      - "1H-1NT-2S-2NT"
+      - "1m-1S-2H-2NT"
+      - "1C-1S-2D-2NT"
+      - "1C-1H-2D-2NT"
+    meaning: "Artificial weak, 6-7 HCP"
+  
