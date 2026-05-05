@@ -536,6 +536,14 @@ rules:
     - "1X-1H-2H-2NT"
     meaning: "Help suit game try, ask partner to bid the lowest suit with help"
 
+  # Drury
+  - patterns:
+    - "P-1M-2C"
+    meaning: "10-11 HCP, 3 card support"
+
+  - patterns:
+    - "P-1M-2D"
+    meaning: "10-11 HCP, 4 card support"
 
   # Misc
   - patterns:
@@ -592,6 +600,10 @@ rules:
     - "1X-(1S)-2Y"
     - "1m-(1H)-2om"
     meaning: "10+ HCP, 5+ suit, forcing"
+    
+  - patterns:
+    - "1X-(1Y)-2Y"
+    meaning: "10+ HCP, support in partner's suit"
 
   - patterns:
     - "1X-(1Y)-2NT"
