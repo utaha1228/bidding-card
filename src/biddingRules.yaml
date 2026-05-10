@@ -327,71 +327,71 @@ rules:
     meaning: "18-19 HCP balanced"
 
   ## Stayman
-  - patterns
+  - patterns:
     - "1NT-2C-2D"
     meaning: "No 4 card major"
   
-  - patterns
+  - patterns:
     - "1NT-2C-2H"
     meaning: "4+ heart"
   
-  - patterns
+  - patterns:
     - "1NT-2C-2S"
     meaning: "4+ spade"
   
   ### Smolen
-  - patterns
+  - patterns:
     - "1NT-2C-2D-2H"
     meaning: "5 heart 4 spade weak"
 
-  - patterns
+  - patterns:
     - "1NT-2C-2D-2S"
     meaning: "4 heart 5 spade weak"
   
-  - patterns
+  - patterns:
     - "1NT-2C-2D-3H"
     meaning: "4 heart 5 spade game forcing"
 
-  - patterns
+  - patterns:
     - "1NT-2C-2D-3S"
     meaning: "5 heart 4 spade game forcing"
 
   ## 1NT-2S
-  - patterns
+  - patterns:
     - "1NT-2S-2NT"
     meaning: "Declining invite (responder pass or correct to 3C)"
 
-  - patterns
+  - patterns:
     - "1NT-2S-3C"
     meaning: "Accepting invite (responder pass or go 3NT)"
   
   ## Transfer
-  - patterns
+  - patterns:
     - "1NT-2D-2H-3H"
     - "1NT-2H-2S-3S"
     meaning: "Invitational, 6+ major"
   
-  - patterns
+  - patterns:
     - "1NT-2D-2H-2NT"
     - "1NT-2H-2S-2NT"
     meaning: "Invitational, 5 card major"
   
-  - patterns
+  - patterns:
     - "1NT-2D-2H-4H"
     - "1NT-2H-2S-4S"
     meaning: "6+ major, Mild slam interest"
     
-  - patterns
+  - patterns:
     - "1NT-2D-2H-3NT"
     - "1NT-2H-2S-3NT"
     meaning: "Game forcing, 5 card major"
   
-  - patterns
+  - patterns:
     - "1NT-2D-2H-3m"
     - "1NT-2H-2S-3m"
     meaning: "Game forcing, unbalanced showing 4 card minor"
   
-  - patterns
+  - patterns:
     - "1NT-2D-2H-2S"
     - "1NT-2H-2S-3H"
     meaning: "Undiscussed"
