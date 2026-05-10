@@ -350,11 +350,27 @@ rules:
   
   - patterns:
     - "1NT-2C-2D-3H"
-    meaning: "4 heart 5 spade game forcing"
+    meaning: "4+ heart 5 spade game forcing"
+  
+  - patterns:
+    - "1NT-2C-2D-3H-3S"
+    meaning: "3 heart 2 spade"
+
+  - patterns:
+    - "1NT-2C-2D-3H-3N"
+    meaning: "2 heart 2 spade"
+  
+  - patterns:
+    - "1NT-2C-2D-3H-4S"
+    meaning: "3 spade"
 
   - patterns:
     - "1NT-2C-2D-3S"
     meaning: "5 heart 4 spade game forcing"
+    
+  - patterns:
+    - "1NT-2D-2H-2S"
+    meaning: "5 heart 4 spade inv"
 
   ## 1NT-2S
   - patterns:
